@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - backend/**
-      - .github/workflows/deploy-prod.yaml
+      - .github/workflows/build-and-deploy-prod.yaml
 
 env:
   IMAGE_TAG: gcr.io/${{ SECRETS.GCP_PROJECT_ID }}/datasport-scraper-lite:latest
@@ -48,3 +48,4 @@ jobs:
         with:
           service: ${{ SECRETS.GCP_PROJECT_ID }}
           image: ${{ env.IMAGE_TAG }}
+          region: europe-central2
