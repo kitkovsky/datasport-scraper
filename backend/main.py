@@ -1,9 +1,8 @@
 import os
 from typing import List
+
 import psycopg2
-
 from flask import Flask
-
 from orm.orm import Race, get_all_races
 
 DB_HOST = os.environ.get("DB_HOST")
