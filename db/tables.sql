@@ -1,8 +1,8 @@
 CREATE TABLE races (
     id serial PRIMARY KEY,
-    datasport_id integer NOT NULL,
+    datasport_race_id integer NOT NULL,
     name varchar(256) NOT NULL,
-    distance double precision NOT NULL
+    distance double precision
 );
 
 CREATE TABLE participants (
@@ -13,5 +13,6 @@ CREATE TABLE participants (
     finish_time integer,
     finished boolean NOT NULL,
     started boolean NOT NULL,
-    race_id integer NOT NULL
+    disqualified boolean NOT NULL,
+    datasport_race_id int NOT NULL
 );

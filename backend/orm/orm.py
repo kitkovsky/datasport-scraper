@@ -16,7 +16,7 @@ Race = TypedDict(
     "Race",
     {
         "id": int,
-        "datasport_id": int,
+        "datasport_race_id": int,
         "name": str,
         "distance": float,
     },
@@ -26,7 +26,7 @@ Race = TypedDict(
 def race_from_row(row) -> Race:
     return {
         "id": row[0],
-        "datasport_id": row[1],
+        "datasport_race_id": row[1],
         "name": row[2],
         "distance": row[3],
     }
