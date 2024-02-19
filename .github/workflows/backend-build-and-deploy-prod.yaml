@@ -1,4 +1,4 @@
-name: Build and deploy to production
+name: Backend build and deploy to production
 
 on:
   push:
@@ -6,10 +6,10 @@ on:
       - main
     paths:
       - backend/**
-      - .github/workflows/build-and-deploy-prod.yaml
+      - .github/workflows/backend-build-and-deploy-prod.yaml
 
 env:
-  IMAGE_TAG: gcr.io/${{ SECRETS.GCP_PROJECT_ID }}/datasport-scraper-lite:latest
+  IMAGE_TAG: gcr.io/${{ SECRETS.GCP_PROJECT_ID }}/datasport-scraper-lite-backend:latest
 
 jobs:
   build-and-deploy:
