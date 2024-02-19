@@ -58,6 +58,7 @@ def get_race_participants(driver: WebDriver) -> List[Participant]:
     # [0::2] because every participant has two rows assigned to them, but we only need the first one  # noqa: E501
     filtered_rows = list(filter(lambda row: not is_special_row(row), all_rows))[0::2]
 
+    print("extracting participants info")
     for row in filtered_rows:
         participant = get_participant_info(row)
         participants.append(participant)
