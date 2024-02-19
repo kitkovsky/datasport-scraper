@@ -18,6 +18,7 @@ from race_scraper.race import (
 load_dotenv()
 
 DATASPORT_RESULTS_URL = "https://wyniki.datasport.pl"
+RACES_SCRAPE_LIMIT = int(os.getenv("RACES_SCRAPE_LIMIT", 0))
 
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
@@ -36,19 +37,14 @@ def get_scrapable_races_list() -> List[Any]:
 
     all_race_tags = datasport_soup.find_all("a")
 
-    races_with_participants = list(
-        # some of the races don't have the number of participants, hence the `or "0"`
-        filter(lambda race: int(race.find("span").text or "0") > 0, all_race_tags)
+    races_to_scrape = list(filter(should_scrape_race, all_race_tags))
+
+    return (
+        races_to_scrape[0:RACES_SCRAPE_LIMIT] if RACES_SCRAPE_LIMIT else races_to_scrape
     )
 
-    # TODO: this should also check if the race.datasport_race_id has already been scraped  # noqa: E501
-    # if not, add it to the list
-    # but the first scrape should be run without this, just scrape everything
 
-    return races_with_participants
-
-
-def scrape_race(race, driver) -> None:
+def scrape_race(race, driver: WebDriver) -> None:
     race_results_page_url = race["href"]
     print(f"scraping race: {race_results_page_url}")
 
@@ -76,6 +72,7 @@ def scrape_race(race, driver) -> None:
                     race["datasport_race_id"],
                 ),
             )
+
     conn.commit()
 
 
@@ -91,3 +88,25 @@ def get_race_info(driver: WebDriver) -> Race:
         "distance": distance,
         "participants": participants,
     }
+
+
+def should_scrape_race(race_tag: Any) -> bool:
+    # some of the races don't have the number of participants, hence the `or "0"`
+    has_any_participants = int(race_tag.find("span").text or "0") > 0
+
+    if not has_any_participants:
+        return False
+
+    # href format: https://wyniki.datasport.pl/results4570
+    datasport_race_id = race_tag.get("href").split("results")[1]
+    has_been_scraped = False
+
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM races WHERE datasport_race_id = %s;",
+            (datasport_race_id,),
+        )
+        result = cur.fetchone()
+        has_been_scraped = result is not None
+
+    return not has_been_scraped

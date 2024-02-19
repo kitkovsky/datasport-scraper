@@ -14,7 +14,7 @@ def main() -> None:
     options.add_argument("window-size=1920,1080")
     driver = webdriver.Chrome(service=service, options=options)
 
-    for race in races_to_scrape[0:1]:
+    for race in races_to_scrape:
         scrape_race(race, driver)
 
     driver.quit()
