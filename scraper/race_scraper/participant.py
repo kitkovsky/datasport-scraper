@@ -36,7 +36,7 @@ def get_race_participants(driver: WebDriver) -> List[Participant]:
 
     print("searching for open_leader_board_accordion")
     # open category leader board accordion
-    find_and_click(driver, By.XPATH, "//small[text()='Open']")
+    find_and_click(driver, By.XPATH, "//small[text()='Open']", scroll=True)
 
     try:
         print("searching for show_all_rows_button")
