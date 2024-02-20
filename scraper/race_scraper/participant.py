@@ -23,7 +23,12 @@ Participant = TypedDict(
 
 TimeTag = TypedDict(
     "TimeTag",
-    {"seconds": int | None, "finished": bool, "started": bool, "disqaualified": bool},
+    {
+        "milliseconds": int | None,
+        "finished": bool,
+        "started": bool,
+        "disqaualified": bool,
+    },
 )
 
 
@@ -109,7 +114,7 @@ def get_participant_info(row: WebElement) -> Participant:
         "name": name,
         "age": age,
         "gender": gender(category_tag),
-        "finish_time": time_tag["seconds"],
+        "finish_time": time_tag["milliseconds"],
         "finished": time_tag["finished"],
         "started": time_tag["started"],
         "disqaualified": time_tag["disqaualified"],
@@ -122,32 +127,52 @@ def convert_time_tag(time_tag: str) -> TimeTag:
         time_tag (str): example: "1:02:00", "25:00", "DNS", "DNF"
 
     Example:
-        convert_time_tag_to_seconds("1:02:00") -> 3720
-        convert_time_tag_to_seconds("25:00") -> 1500
+        convert_time_tag("1:02:00") -> 3_720_000
+        convert_time_tag("25:00") -> 1_500_000
+        convert_time_tag("02:19,47") -> 139_470
     """
     if time_tag in ["DNS", "(0.00 km)"]:
-        return TimeTag(seconds=None, finished=False, started=False, disqaualified=False)
+        return TimeTag(
+            milliseconds=None, finished=False, started=False, disqaualified=False
+        )
     # participants can sometimes have a time tag for running only a part of the race,
     # in this case the tag inlcudes the distance ran in parentheses, like "(8.00 km)"
     if time_tag == "DNF" or any(char in ["(", ")"] for char in time_tag):
-        return TimeTag(seconds=None, finished=False, started=True, disqaualified=False)
+        return TimeTag(
+            milliseconds=None, finished=False, started=True, disqaualified=False
+        )
     if time_tag == "DSQ":
-        return TimeTag(seconds=None, finished=False, started=True, disqaualified=True)
+        return TimeTag(
+            milliseconds=None, finished=False, started=True, disqaualified=True
+        )
 
     # input format:
     # """
     # 46:14 3.04/km
     # +00:00
+    # or with miliseconds
+    # 02:19,47 1.46/km
+    # +00:00
     # """
-    total_seconds = 0
+    total_milliseconds = 0
 
     time_tag = time_tag.split(" ")[0]
+    has_milliseconds = "," in time_tag
+
+    if has_milliseconds:
+        milliseconds_part = int(time_tag.split(",")[1]) * 10
+        total_milliseconds += milliseconds_part
+        time_tag = time_tag.split(",")[0]
+
     time_tag_parts = time_tag.strip().split(":")
     time_tag_parts.reverse()
 
     for idx, part in enumerate(time_tag_parts):
-        total_seconds += int(part) * (60**idx)
+        total_milliseconds += int(part) * (60**idx) * 1000
 
     return TimeTag(
-        seconds=total_seconds, finished=True, started=True, disqaualified=False
+        milliseconds=total_milliseconds,
+        finished=True,
+        started=True,
+        disqaualified=False,
     )
