@@ -23,7 +23,7 @@ load_dotenv()
 
 DATASPORT_RESULTS_URL = "https://wyniki.datasport.pl"
 
-RACES_SCRAPE_LIMIT = int(os.getenv("RACES_SCRAPE_LIMIT", 0))
+RACES_SCRAPE_LIMIT = int(os.getenv("RACES_SCRAPE_LIMIT", -1))
 
 
 def get_scrapable_races_list() -> List[Any]:
@@ -32,11 +32,15 @@ def get_scrapable_races_list() -> List[Any]:
 
     all_race_tags = datasport_soup.find_all("a")
 
-    races_to_scrape = list(filter(should_scrape_race, all_race_tags))
+    races_to_scrape = []
 
-    return (
-        races_to_scrape[0:RACES_SCRAPE_LIMIT] if RACES_SCRAPE_LIMIT else races_to_scrape
-    )
+    for race_tag in all_race_tags:
+        if should_scrape_race(race_tag):
+            races_to_scrape.append(race_tag)
+        if len(races_to_scrape) == RACES_SCRAPE_LIMIT:
+            break
+
+    return races_to_scrape
 
 
 def scrape_race(race, driver: WebDriver) -> None:
