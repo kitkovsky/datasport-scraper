@@ -1,23 +1,15 @@
 import os
+import sys
 from typing import List
 
-from dotenv import load_dotenv
 from flask import Flask
-from models import Base, Race
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
-load_dotenv()
+sys.path.append("..")
 
-DB_URL = os.getenv("DB_URL")
-DB_AUTH_TOKEN = os.getenv("DB_AUTH_TOKEN")
+from db.connection import session
+from db.models import Race
 
-db_url = f"sqlite+{DB_URL}/?authToken={DB_AUTH_TOKEN}"
-
-engine = create_engine(db_url, connect_args={"check_same_thread": False}, echo=True)
-Base.metadata.create_all(bind=engine)
-
-session = Session(engine)
+PORT = int(os.getenv("PORT", 8080))
 
 app = Flask(__name__)
 
@@ -43,4 +35,4 @@ def race(datasport_race_id: int) -> dict | str:
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    app.run(debug=True, host="0.0.0.0", port=PORT)

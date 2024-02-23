@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  backend:
+    container_name: backend
+    restart: always
+    environment:
+      PORT: 8080
+      DB_URL: pysqlite:///db/sqlite.db
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    volumes:
+      - ./db:/app/db
+      - ./backend:/app/backend
+    ports:
+      - "8080:8080"

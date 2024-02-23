@@ -10,10 +10,12 @@ RUN wget https://storage.googleapis.com/chrome-for-testing-public/121.0.6167.184
 RUN unzip chromedriver-linux64.zip
 
 WORKDIR /app
-COPY . .
+COPY scraper scraper
+COPY db db
 
 RUN mv /chromedriver-linux64/chromedriver ./
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r scraper/requirements.txt
+RUN pip install -r db/requirements.txt
 
-CMD exec python main.py
+CMD exec python scraper/main.py

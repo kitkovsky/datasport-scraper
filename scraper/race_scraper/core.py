@@ -1,8 +1,7 @@
 import os
-from contextlib import closing
-from typing import Any, List
+import sys
+from typing import Any, List, Tuple
 
-import libsql_experimental as libsql
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -10,21 +9,21 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 from race_scraper.participant import get_race_participants
 from race_scraper.race import (
-    Race,
     get_race_datasport_id,
     get_race_distance,
     get_race_title,
 )
+
+sys.path.append("..")
+
+from db.connection import session
+from db.models import Participant, Race
 
 load_dotenv()
 
 DATASPORT_RESULTS_URL = "https://wyniki.datasport.pl"
 
 RACES_SCRAPE_LIMIT = int(os.getenv("RACES_SCRAPE_LIMIT", 0))
-DB_URL = os.getenv("DB_URL")
-DB_AUTH_TOKEN = os.getenv("DB_AUTH_TOKEN")
-
-conn = libsql.connect(database=DB_URL, auth_token=DB_AUTH_TOKEN)
 
 
 def get_scrapable_races_list() -> List[Any]:
@@ -46,44 +45,23 @@ def scrape_race(race, driver: WebDriver) -> None:
 
     driver.get(race_results_page_url)
 
-    race = get_race_info(driver)
+    race, participants = get_race_info(driver)
 
-    with closing(conn.cursor()) as cur:
-        cur.execute(
-            "INSERT INTO races (datasport_race_id, name, distance) VALUES (?, ?, ?);",  # noqa: E501
-            (race["datasport_race_id"], race["name"], race["distance"]),
-        )
+    session.add(race)
+    session.add_all(participants)
 
-        for participant in race["participants"]:
-            cur.execute(
-                "INSERT INTO participants (name, age, gender, finish_time, finished, started, disqualified, datasport_race_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",  # noqa: E501
-                (
-                    participant["name"],
-                    participant["age"],
-                    participant["gender"],
-                    participant["finish_time"],
-                    participant["finished"],
-                    participant["started"],
-                    participant["disqaualified"],
-                    race["datasport_race_id"],
-                ),
-            )
-
-    conn.commit()
+    session.commit()
 
 
-def get_race_info(driver: WebDriver) -> Race:
+def get_race_info(driver: WebDriver) -> Tuple[Race, List[Participant]]:
     datasport_race_id = get_race_datasport_id(driver)
     title = get_race_title(driver)
     distance = get_race_distance(driver)
-    participants = get_race_participants(driver)
+    participants = get_race_participants(driver, datasport_race_id)
 
-    return {
-        "datasport_race_id": datasport_race_id,
-        "name": title,
-        "distance": distance,
-        "participants": participants,
-    }
+    return Race(
+        datasport_race_id=datasport_race_id, name=title, distance=distance
+    ), participants
 
 
 def should_scrape_race(race_tag: Any) -> bool:
@@ -97,12 +75,7 @@ def should_scrape_race(race_tag: Any) -> bool:
     datasport_race_id = race_tag.get("href").split("results")[1]
     has_been_scraped = False
 
-    with closing(conn.cursor()) as cur:
-        cur.execute(
-            "SELECT * FROM races WHERE datasport_race_id = ?;",
-            (datasport_race_id,),
-        )
-        result = cur.fetchone()
-        has_been_scraped = result is not None
+    if session.query(Race).where(Race.datasport_race_id == datasport_race_id).first():
+        has_been_scraped = True
 
     return not has_been_scraped
