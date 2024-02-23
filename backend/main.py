@@ -1,22 +1,20 @@
 import os
 from typing import List
 
+from dotenv import load_dotenv
 from flask import Flask
 from models import Base, Race
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-DB_HOST = os.environ.get("DB_HOST")
-DB_PORT = os.environ.get("DB_PORT")
-DB_NAME = os.environ.get("DB_NAME")
-DB_USER = os.environ.get("DB_USER")
-DB_PASSWORD = os.environ.get("DB_PASSWORD")
+load_dotenv()
 
-connection_string = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+DB_URL = os.getenv("DB_URL")
+DB_AUTH_TOKEN = os.getenv("DB_AUTH_TOKEN")
 
-engine = create_engine(connection_string, echo=True)
+db_url = f"sqlite+{DB_URL}/?authToken={DB_AUTH_TOKEN}"
+
+engine = create_engine(db_url, connect_args={"check_same_thread": False}, echo=True)
 Base.metadata.create_all(bind=engine)
 
 session = Session(engine)

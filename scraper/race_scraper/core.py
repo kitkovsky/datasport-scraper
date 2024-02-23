@@ -1,7 +1,8 @@
 import os
+from contextlib import closing
 from typing import Any, List
 
-import psycopg2
+import libsql_experimental as libsql
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -18,17 +19,12 @@ from race_scraper.race import (
 load_dotenv()
 
 DATASPORT_RESULTS_URL = "https://wyniki.datasport.pl"
+
 RACES_SCRAPE_LIMIT = int(os.getenv("RACES_SCRAPE_LIMIT", 0))
+DB_URL = os.getenv("DB_URL")
+DB_AUTH_TOKEN = os.getenv("DB_AUTH_TOKEN")
 
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-
-conn = psycopg2.connect(
-    host=DB_HOST, port=DB_PORT, dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD
-)
+conn = libsql.connect(database=DB_URL, auth_token=DB_AUTH_TOKEN)
 
 
 def get_scrapable_races_list() -> List[Any]:
@@ -52,15 +48,15 @@ def scrape_race(race, driver: WebDriver) -> None:
 
     race = get_race_info(driver)
 
-    with conn.cursor() as cur:
+    with closing(conn.cursor()) as cur:
         cur.execute(
-            "INSERT INTO races (datasport_race_id, name, distance) VALUES (%s, %s, %s);",  # noqa: E501
+            "INSERT INTO races (datasport_race_id, name, distance) VALUES (?, ?, ?);",  # noqa: E501
             (race["datasport_race_id"], race["name"], race["distance"]),
         )
 
         for participant in race["participants"]:
             cur.execute(
-                "INSERT INTO participants (name, age, gender, finish_time, finished, started, disqualified, datasport_race_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);",  # noqa: E501
+                "INSERT INTO participants (name, age, gender, finish_time, finished, started, disqualified, datasport_race_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",  # noqa: E501
                 (
                     participant["name"],
                     participant["age"],
@@ -101,9 +97,9 @@ def should_scrape_race(race_tag: Any) -> bool:
     datasport_race_id = race_tag.get("href").split("results")[1]
     has_been_scraped = False
 
-    with conn.cursor() as cur:
+    with closing(conn.cursor()) as cur:
         cur.execute(
-            "SELECT * FROM races WHERE datasport_race_id = %s;",
+            "SELECT * FROM races WHERE datasport_race_id = ?;",
             (datasport_race_id,),
         )
         result = cur.fetchone()
