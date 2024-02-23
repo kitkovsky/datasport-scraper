@@ -12,7 +12,7 @@ class Race(Base):
     __tablename__ = "races"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    datasport_race_id: Mapped[int] = mapped_column(unique=True)
+    datasport_race_id: Mapped[int] = mapped_column(unique=True, index=True)
     name: Mapped[str] = mapped_column(String(100))
     distance: Mapped[float | None] = mapped_column(nullable=True)
 
