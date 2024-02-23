@@ -6,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from selenium.webdriver.chrome.webdriver import WebDriver
+from sqlalchemy import insert
 
 from race_scraper.participant import get_race_participants
 from race_scraper.race import (
@@ -52,7 +53,9 @@ def scrape_race(race, driver: WebDriver) -> None:
     race, participants = get_race_info(driver)
 
     session.add(race)
-    session.add_all(participants)
+    session.execute(
+        insert(Participant), [participant.to_dict() for participant in participants]
+    )
 
     session.commit()
 
