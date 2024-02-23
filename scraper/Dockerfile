@@ -13,9 +13,11 @@ WORKDIR /app
 COPY scraper scraper
 COPY db db
 
-RUN mv /chromedriver-linux64/chromedriver ./
+RUN mv /chromedriver-linux64/chromedriver scraper/
 
-RUN pip install -r scraper/requirements.txt
-RUN pip install -r db/requirements.txt
+RUN pip install --no-cache-dir -r scraper/requirements.txt
+RUN pip install --no-cache-dir -r db/requirements.txt
 
-CMD exec python scraper/main.py
+WORKDIR /app/scraper
+
+CMD exec python main.py
