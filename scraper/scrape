@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+export DB_URL=pysqlite:///../db/sqlite.db
+python main.py

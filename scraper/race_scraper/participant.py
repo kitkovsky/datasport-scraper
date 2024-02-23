@@ -1,4 +1,5 @@
 import datetime
+import sys
 from typing import List, Literal, TypedDict
 
 from selenium.common.exceptions import NoSuchElementException
@@ -6,20 +7,10 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from race_scraper.utils import find_and_click
+sys.path.append("..")
 
-Participant = TypedDict(
-    "Participant",
-    {
-        "name": str,
-        "age": int,
-        "gender": Literal["M", "F"] | None,
-        "finish_time": int | None,
-        "finished": bool,
-        "started": bool,
-        "disqaualified": bool,
-    },
-)
+from db.models import Participant
+from race_scraper.utils import find_and_click
 
 TimeTag = TypedDict(
     "TimeTag",
@@ -27,12 +18,14 @@ TimeTag = TypedDict(
         "milliseconds": int | None,
         "finished": bool,
         "started": bool,
-        "disqaualified": bool,
+        "disqualified": bool,
     },
 )
 
 
-def get_race_participants(driver: WebDriver) -> List[Participant]:
+def get_race_participants(
+    driver: WebDriver, datasport_race_id: int
+) -> List[Participant]:
     participants: List[Participant] = []
 
     print("searching for results_accordion")
@@ -65,7 +58,7 @@ def get_race_participants(driver: WebDriver) -> List[Participant]:
 
     print("extracting participants info")
     for row in filtered_rows:
-        participant = get_participant_info(row)
+        participant = get_participant_info(row, datasport_race_id)
         participants.append(participant)
 
     return participants
@@ -85,7 +78,7 @@ def is_special_row(row: WebElement) -> bool:
     return is_overwritten_time_row or is_crown_row
 
 
-def get_participant_info(row: WebElement) -> Participant:
+def get_participant_info(row: WebElement, datasport_race_id: int) -> Participant:
     # tag format:
     #   """
     #   JAN KOWALSKI (1017)
@@ -110,15 +103,16 @@ def get_participant_info(row: WebElement) -> Participant:
     finish_time_tag = row.find_elements(By.TAG_NAME, "td")[5].text
     time_tag = convert_time_tag(finish_time_tag)
 
-    return {
-        "name": name,
-        "age": age,
-        "gender": gender(category_tag),
-        "finish_time": time_tag["milliseconds"],
-        "finished": time_tag["finished"],
-        "started": time_tag["started"],
-        "disqaualified": time_tag["disqaualified"],
-    }
+    return Participant(
+        name=name,
+        age=age,
+        gender=gender(category_tag),
+        finish_time=time_tag["milliseconds"],
+        finished=time_tag["finished"],
+        started=time_tag["started"],
+        disqualified=time_tag["disqualified"],
+        datasport_race_id=datasport_race_id,
+    )
 
 
 def convert_time_tag(time_tag: str) -> TimeTag:
@@ -133,17 +127,17 @@ def convert_time_tag(time_tag: str) -> TimeTag:
     """
     if time_tag in ["DNS", "(0.00 km)"]:
         return TimeTag(
-            milliseconds=None, finished=False, started=False, disqaualified=False
+            milliseconds=None, finished=False, started=False, disqualified=False
         )
     # participants can sometimes have a time tag for running only a part of the race,
     # in this case the tag inlcudes the distance ran in parentheses, like "(8.00 km)"
     if time_tag == "DNF" or any(char in ["(", ")"] for char in time_tag):
         return TimeTag(
-            milliseconds=None, finished=False, started=True, disqaualified=False
+            milliseconds=None, finished=False, started=True, disqualified=False
         )
     if time_tag == "DSQ":
         return TimeTag(
-            milliseconds=None, finished=False, started=True, disqaualified=True
+            milliseconds=None, finished=False, started=True, disqualified=True
         )
 
     # input format:
@@ -174,5 +168,5 @@ def convert_time_tag(time_tag: str) -> TimeTag:
         milliseconds=total_milliseconds,
         finished=True,
         started=True,
-        disqaualified=False,
+        disqualified=False,
     )

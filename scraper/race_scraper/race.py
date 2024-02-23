@@ -1,19 +1,5 @@
-from typing import List, TypedDict
-
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
-
-from race_scraper.participant import Participant
-
-Race = TypedDict(
-    "Race",
-    {
-        "datasport_race_id": int,
-        "name": str,
-        "distance": float | None,
-        "participants": List[Participant],
-    },
-)
 
 
 def get_race_distance(driver: WebDriver) -> float | None:

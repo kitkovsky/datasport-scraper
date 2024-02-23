@@ -1,39 +1,17 @@
 version: "3"
 
 services:
-  db:
-    image: postgres:latest
-    container_name: db
-    restart: always
-    environment:
-      POSTGRES_DB: datasport-scraper
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    volumes:
-      - ./postgresql.conf:/etc/postgresql/postgresql.conf
-      - db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
   backend:
     container_name: backend
     restart: always
-    depends_on:
-      - db
     environment:
       PORT: 8080
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: datasport-scraper
-      DB_USER: user
-      DB_PASSWORD: password
+      DB_URL: pysqlite:///db/sqlite.db
     build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: backend/Dockerfile.dev
     volumes:
-      - ./backend:/app
+      - ./db:/app/db
+      - ./backend:/app/backend
     ports:
       - "8080:8080"
-
-volumes:
-  db_data:

@@ -1,25 +1,15 @@
 import os
+import sys
 from typing import List
 
 from flask import Flask
-from models import Base, Race
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
-DB_HOST = os.environ.get("DB_HOST")
-DB_PORT = os.environ.get("DB_PORT")
-DB_NAME = os.environ.get("DB_NAME")
-DB_USER = os.environ.get("DB_USER")
-DB_PASSWORD = os.environ.get("DB_PASSWORD")
+sys.path.append("..")
 
-connection_string = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+from db.connection import session
+from db.models import Race
 
-engine = create_engine(connection_string, echo=True)
-Base.metadata.create_all(bind=engine)
-
-session = Session(engine)
+PORT = int(os.getenv("PORT", 8080))
 
 app = Flask(__name__)
 
@@ -45,4 +35,4 @@ def race(datasport_race_id: int) -> dict | str:
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    app.run(debug=True, host="0.0.0.0", port=PORT)
