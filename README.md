@@ -6,6 +6,7 @@ Currently able to save (per race):
 
 ***
 
+App URL: [imperial-ally-414513-ej4pzz4pbq-lm.a.run.app](https://imperial-ally-414513-ej4pzz4pbq-lm.a.run.app)\
 Available API routes:
 - `/races` - all races
 - `/races/{datasport_race_id}` - race details
@@ -13,14 +14,21 @@ Available API routes:
 
 ## How to get going
 
+### Developing
+Create a virtual environment in the root of the project. Each app has its own requirements file:
+- `requirements.txt` - shared between all apps
+- `scraper/requirements.txt`
+- `backend/requirements.txt`
+- `db/requirements.txt`
+
 ### Backend
-1. `docker-compose up` starts a local postgres db and a Flask app
+1. `docker-compose up` starts a local Flask app that reads from a `db/sqlite.db` file
 
 ### Scraper
-Execute all commands from `/scraper` directory.
+Execute all commands from `scraper` directory with the root virtual env sourced.
 
-1. Grab your chromedriver from [here](https://googlechromelabs.github.io/chrome-for-testing) and place it in the `/scraper` directory
-2. `pip install -r requirements.txt`
-3. `python main.py` will run the scraper and save results to the db
+1. Grab your chromedriver from [here](https://googlechromelabs.github.io/chrome-for-testing) and place it in the `scraper` directory
+3. `chmod +x scrape`
+3. `./scrape` will run the scraper and save results to the db
 
-`RACES_SCRAPE_LIMIT` variable in `/scraper/.env` will set the limit of scraped races per run. When set to nothing, the scraper will scrape all available races.
+`RACES_SCRAPE_LIMIT` variable in `scraper/.env` will set the limit of scraped races per run. When set to nothing, the scraper will scrape all available races.
