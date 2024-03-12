@@ -9,7 +9,7 @@ on:
       - .github/workflows/backend-build-and-deploy-prod.yaml
 
 env:
-  IMAGE_TAG: gcr.io/${{ SECRETS.GCP_PROJECT_ID }}/datasport-scraper-lite-backend:latest
+  IMAGE_TAG: gcr.io/${{ SECRETS.GCP_PROJECT_ID }}/datasport-scraper-backend:latest
 
 jobs:
   build-and-deploy:

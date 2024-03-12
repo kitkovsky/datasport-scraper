@@ -9,8 +9,8 @@ on:
       - .github/workflows/scraper-build-and-deploy-prod.yaml
 
 env:
-  JOB_NAME: datasport-scraper-lite-scraper
-  IMAGE_TAG: gcr.io/${{ SECRETS.GCP_PROJECT_ID }}/datasport-scraper-lite-scraper:latest
+  JOB_NAME: datasport-scraper-scraper
+  IMAGE_TAG: gcr.io/${{ SECRETS.GCP_PROJECT_ID }}/datasport-scraper-scraper:latest
 
 jobs:
   build-and-deploy:
