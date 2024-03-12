@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - backend/**
+      - db/**
       - .github/workflows/backend-build-and-deploy-prod.yaml
 
 env:
