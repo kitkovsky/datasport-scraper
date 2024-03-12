@@ -22,7 +22,7 @@ Create a virtual environment in the root of the project. Each app has its own re
 - `db/requirements.txt`
 
 ### Backend
-1. `docker-compose up` starts a local Flask app that reads from a `db/sqlite.db` file
+1. `docker-compose up` starts a local postgres db and a Flask app
 
 ### Scraper
 Execute all commands from `scraper` directory with the root virtual env sourced.
