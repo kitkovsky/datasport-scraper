@@ -13,7 +13,7 @@ class Race(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     datasport_race_id: Mapped[int] = mapped_column(unique=True, index=True)
-    name: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(256))
     distance: Mapped[float | None] = mapped_column(nullable=True)
 
     participants: Mapped[List["Participant"]] = relationship(back_populates="race")
