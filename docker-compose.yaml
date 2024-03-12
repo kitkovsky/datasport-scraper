@@ -19,7 +19,7 @@ services:
       - db
     environment:
       PORT: 8080
-      DB_HOST: localhost
+      DB_HOST: db
       DB_PORT: 5432
       DB_NAME: datasport-scraper
       DB_USER: user
