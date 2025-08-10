@@ -28,12 +28,11 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          token_format: access_token
-          service_account: ${{ SECRETS.WIF_SERVICE_ACCOUNT }}
-          workload_identity_provider: ${{ SECRETS.WIF_PROVIDER}}
+          project_id: datasport-scraper-468611
+          workload_identity_provider: projects/380207289455/locations/global/workloadIdentityPools/github/providers/my-repo
 
       - name: Authenticate Docker
-        uses: "docker/login-action@v3"
+        uses: docker/login-action@v3
         with:
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.access_token }}
