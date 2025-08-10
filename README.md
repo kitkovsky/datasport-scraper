@@ -6,7 +6,7 @@ Currently able to save (per race):
 
 ***
 
-App URL: [imperial-ally-414513-ej4pzz4pbq-lm.a.run.app](https://imperial-ally-414513-ej4pzz4pbq-lm.a.run.app)\
+App URL: [datasport-scraper-468611-380207289455.europe-central2.run.app/](https://datasport-scraper-468611-380207289455.europe-central2.run.app)\
 Available API routes:
 - `/races` - all races
 - `/races/{datasport_race_id}` - race details
