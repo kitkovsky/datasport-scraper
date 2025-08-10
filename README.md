@@ -28,7 +28,7 @@ Create a virtual environment in the root of the project. Each app has its own re
 Execute all commands from `scraper` directory with the root virtual env sourced.
 
 1. Grab your chromedriver from [here](https://googlechromelabs.github.io/chrome-for-testing) and place it in the `scraper` directory
-3. `chmod +x scrape`
+2. Make sure you have postgres installed (`brew install postgresql@17` as of writing this) and added to your PATH (`export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"`)
 3. `./scrape` will run the scraper and save results to the db
 
 `RACES_SCRAPE_LIMIT` variable in `scraper/.env` will set the limit of scraped races per run. When set to nothing, the scraper will scrape all available races.
