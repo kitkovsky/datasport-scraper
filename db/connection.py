@@ -15,7 +15,17 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 CLOUD_SQL_CONNECTION_NAME = os.getenv("CLOUD_SQL_CONNECTION_NAME")
 
-db_url = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?host=/cloudsql/{CLOUD_SQL_CONNECTION_NAME}"
+if ENVIRONMENT == "development":
+    DB_HOST = os.getenv("DB_HOST")
+    DB_PORT = os.getenv("DB_PORT")
+    db_url = (
+        f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
+else:
+    db_url = (
+        f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}"
+        f"?host=/cloudsql/{CLOUD_SQL_CONNECTION_NAME}"
+    )
 
 engine = create_engine(db_url, echo=ENVIRONMENT == "development")
 Base.metadata.create_all(bind=engine)
