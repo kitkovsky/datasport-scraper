@@ -2,7 +2,6 @@ import os
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session
 
 from db.models import Base
@@ -18,19 +17,9 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 CLOUD_SQL_CONNECTION_NAME = os.getenv("CLOUD_SQL_CONNECTION_NAME")
 
-# db_url = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+db_url = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?host=/cloudsql/{CLOUD_SQL_CONNECTION_NAME}"
 
-engine = create_engine(
-    URL.create(
-        drivername="postgresql+psycopg2",
-        username=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME,
-        query={
-            "unix_sock": "/cloudsql/{}/.s.PGSQL.5432".format(CLOUD_SQL_CONNECTION_NAME)
-        },
-    )
-)
+engine = create_engine(db_url, echo=ENVIRONMENT == "development")
 Base.metadata.create_all(bind=engine)
 
 session = Session(engine)
