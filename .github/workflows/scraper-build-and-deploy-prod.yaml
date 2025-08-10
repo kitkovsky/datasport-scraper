@@ -28,8 +28,9 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          project_id: ${{ SECRETS.GCP_PROJECT_ID }}
+          # project_id: ${{ SECRETS.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ SECRETS.WIF_PROVIDER }}
+          service_account: ${{ SECRETS.SERVICE_ACCOUNT}}
           token_format: access_token
 
       - name: Authenticate Docker
