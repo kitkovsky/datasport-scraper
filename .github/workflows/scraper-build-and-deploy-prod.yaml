@@ -28,8 +28,8 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          project_id: datasport-scraper-468611
-          workload_identity_provider: projects/380207289455/locations/global/workloadIdentityPools/github/providers/my-repo
+          project_id: ${{ SECRETS.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ SECRETS.WIF_PROVIDER }}
 
       - name: Authenticate Docker
         uses: docker/login-action@v3
