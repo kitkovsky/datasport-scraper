@@ -5,7 +5,9 @@ from typing import Any, List, Tuple
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.by import By
 from sqlalchemy import insert
 
 from race_scraper.participant import get_race_participants
@@ -27,7 +29,7 @@ DATASPORT_RESULTS_URL = "https://wyniki.datasport.pl"
 RACES_SCRAPE_LIMIT = int(os.getenv("RACES_SCRAPE_LIMIT", -1))
 
 
-def get_scrapable_races_list() -> List[Any]:
+def get_scrapable_races_list(driver: WebDriver) -> List[Any]:
     datasport_req = requests.get(DATASPORT_RESULTS_URL)
     datasport_soup = BeautifulSoup(datasport_req.content, "html.parser")
 
@@ -36,7 +38,7 @@ def get_scrapable_races_list() -> List[Any]:
     races_to_scrape = []
 
     for race_tag in all_race_tags:
-        if should_scrape_race(race_tag):
+        if should_scrape_race(race_tag, driver):
             races_to_scrape.append(race_tag)
         if len(races_to_scrape) == RACES_SCRAPE_LIMIT:
             break
@@ -49,6 +51,14 @@ def scrape_race(race, driver: WebDriver) -> None:
     print(f"scraping race: {race_results_page_url}")
 
     driver.get(race_results_page_url)
+
+    # new race format (3rd party?), that's not supported yet
+    if (
+        driver.find_element("tag name", "body").get_attribute("background")
+        == "img/tlo.jpg"
+    ):
+        print("Skipping unsupported race format.")
+        return
 
     race, participants = get_race_info(driver)
 
@@ -71,7 +81,7 @@ def get_race_info(driver: WebDriver) -> Tuple[Race, List[Participant]]:
     ), participants
 
 
-def should_scrape_race(race_tag: Any) -> bool:
+def should_scrape_race(race_tag: Any, driver: WebDriver) -> bool:
     race_participants_count_span = race_tag.find("span")
     if race_participants_count_span is None:
         return False
@@ -81,11 +91,28 @@ def should_scrape_race(race_tag: Any) -> bool:
     if race_participants_count <= 0:
         return False
 
+    race_results_page_url = race_tag.get("href")
+
     # href format: https://wyniki.datasport.pl/results4570
-    datasport_race_id = race_tag.get("href").split("results")[1]
-    has_been_scraped = False
-
+    datasport_race_id = race_results_page_url.split("results")[1]
     if session.query(Race).where(Race.datasport_race_id == datasport_race_id).first():
-        has_been_scraped = True
+        return False
 
-    return not has_been_scraped
+    driver.get(race_results_page_url)
+
+    # new race format (3rd party?), that's not supported yet
+    if (
+        driver.find_element("tag name", "body").get_attribute("background")
+        == "img/tlo.jpg"
+    ):
+        print("Skipping unsupported race format.")
+        return False
+
+    try:
+        is_relay_race = driver.find_element(By.XPATH, "//small[text()='Sztafeta']")
+        if is_relay_race:
+            return False
+    except NoSuchElementException:
+        pass
+
+    return True

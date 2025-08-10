@@ -33,7 +33,7 @@ def get_race_participants(
     find_and_click(driver, By.ID, "a1but1")
 
     print("searching for open_leader_board_accordion")
-    # open category leader board accordion
+    # open category leaderboard accordion
     find_and_click(driver, By.XPATH, "//small[text()='Open']", scroll=True)
 
     try:

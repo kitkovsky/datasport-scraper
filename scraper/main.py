@@ -4,8 +4,6 @@ from selenium.webdriver.chrome.service import Service
 
 
 def main() -> None:
-    races_to_scrape = get_scrapable_races_list()
-
     service = Service(executable_path="./chromedriver")
     options = webdriver.ChromeOptions()
     options.add_argument("--headless=new")
@@ -13,6 +11,8 @@ def main() -> None:
     options.add_argument("--no-sandbox")
     options.add_argument("window-size=1920,1080")
     driver = webdriver.Chrome(service=service, options=options)
+
+    races_to_scrape = get_scrapable_races_list(driver)
 
     for race in races_to_scrape:
         scrape_race(race, driver)
