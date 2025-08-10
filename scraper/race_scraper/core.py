@@ -72,10 +72,13 @@ def get_race_info(driver: WebDriver) -> Tuple[Race, List[Participant]]:
 
 
 def should_scrape_race(race_tag: Any) -> bool:
-    # some of the races don't have the number of participants, hence the `or "0"`
-    has_any_participants = int(race_tag.find("span").text or "0") > 0
+    race_participants_count_span = race_tag.find("span")
+    if race_participants_count_span is None:
+        return False
 
-    if not has_any_participants:
+    # some of the races don't have the number of participants, hence the `or "0"`
+    race_participants_count = int(race_participants_count_span.text.strip() or "0")
+    if race_participants_count <= 0:
         return False
 
     # href format: https://wyniki.datasport.pl/results4570
